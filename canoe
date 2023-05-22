@@ -1,0 +1,41 @@
+#!/bin/bash
+
+backup_container_db() {
+    echo "Backing up the database..."
+    FOLDER=./docker-compose/mysql
+    if [[ ! -d "$FOLDER" ]]; then
+        mkdir ./docker-compose/mysql
+    fi
+    docker exec db mysqldump -uroot -psecret test > ./docker-compose/mysql/backup.sql
+}
+
+docker_up() {
+    echo "Building..."
+    docker-compose build
+    echo "Starting..."
+    docker-compose up -d
+    echo "Started!"
+}
+
+docker_down() {
+    backup_container_db
+    sleep 1
+    docker-compose down
+}
+
+case $1 in
+    "up")
+        echo "Starting containers"
+        docker_up
+        ;;
+    "down")
+        echo "Stopping containers"
+        docker_down
+        ;;
+    "backup")
+        backup_container_db
+        ;;
+    *)
+        echo "Unknown command"
+        ;;
+esac
